@@ -913,6 +913,7 @@ function update() {
 
 */
 
+// minimax
 function getBestMove(type) {
     let mx = -Infinity;
     let bestMove;
@@ -965,6 +966,76 @@ function minimax(type, state, depth, agent) {
 
             const ret = minimax(type, nextState, depth - 1, true);
             mn = Math.min(mn, ret);
+        }
+
+        return mn;
+    }
+}
+
+// alpha beta
+function getBestMove_ABP(type) {
+    let mx = -Infinity;
+    let bestMove;
+
+    const possibleMoves = currentState.getPossibleMoves(type);
+
+    for (let move of possibleMoves) {
+        let nextState = new GameState(currentState.board);
+
+        nextState.makeMove(type, move);
+
+        const ret = alpha_beta_pruning(type, nextState, depth - 1, -Infinity, Infinity, false);
+        if (ret > mx) {
+            mx = ret;
+            bestMove = move;
+        }
+    }
+
+    return bestMove;
+}
+
+function alpha_beta_pruning(type, state, depth, alpha, beta, maximizingPlayer) {
+    if (depth === 0 || state.checkGameOver()) {
+        return state.evaluate();
+    }
+
+    const possibleMoves = state.getPossibleMoves(type);
+
+    if (maximizingPlayer) {
+        let mx = -Infinity;
+
+        for (let move of possibleMoves) {
+            const nextState = new GameState(state.board);
+
+            nextState.makeMove(type, move);
+
+            const ret = alpha_beta_pruning(type, nextState, depth - 1, alpha, beta, false);
+            mx = Math.max(mx, ret);
+            alpha = Math.max(alpha, mx);
+
+            if (beta <= alpha) {
+                // Beta cut-off
+                break;
+            }
+        }
+
+        return mx;
+    } else {
+        let mn = Infinity;
+
+        for (let move of possibleMoves) {
+            const nextState = new GameState(state.board);
+
+            nextState.makeMove(type, move);
+
+            const ret = alpha_beta_pruning(type, nextState, depth - 1, alpha, beta, true);
+            mn = Math.min(mn, ret);
+            beta = Math.min(beta, mn);
+
+            if (beta <= alpha) {
+                // Alpha cut-off
+                break;
+            }
         }
 
         return mn;

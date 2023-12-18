@@ -26,11 +26,152 @@ var positionMatrix = new Array(7);
 var canvas = document.getElementById("myCanvas");
 var context = canvas.getContext("2d");
 
+const depth = 5;
+let currentState;
+
+class GameState {
+    constructor(positionMatrix) {
+        this.board = positionMatrix;
+    }
+
+    getPossibleMoves(type) {
+        const possibleMoves = [];
+
+        for (let r = 0; r < rows; ++r) {
+            for (let c = 0; c < columns; ++c) {
+                if (this.board[c][r] === 0 && type === 1) {
+                    possibleMoves.push({ X: c, Y: r });
+                }
+                else if (this.board[c][r] === playerTwoCode && type === 2) {
+                    const adj = this.getPossibleAdjacent(c, r);
+
+                    for (let a of adj) {
+                        possibleMoves.push({ from: { X: c, Y: r }, to: a });
+                    }
+                }
+            }
+        }
+
+        return possibleMoves;
+    }
+
+    getPossibleAdjacent(x, y) {
+        const adj = [];
+
+        if (x > 0 && this.board[x - 1][y] === 0) {
+            adj.push({ X: x - 1, Y: y });
+        }
+        if (x < 6 && this.board[x + 1][y] === 0) {
+            adj.push({ X: x + 1, Y: y });
+        }
+        if (y > 0 && this.board[x][y - 1] === 0) {
+            adj.push({ X: x, Y: y - 1 });
+        }
+        if (y < 6 && this.board[x][y + 1] === 0) {
+            adj.push({ X: x, Y: y + 1 });
+        }
+
+        return adj;
+    }
+
+    evaluate() {
+        const playerOnePieces = this.countPlayerPieces(playerOneCode);
+        const playerTwoPieces = this.countPlayerPieces(playerTwoCode);
+        const playerOneMills = this.countPlayerMills(playerOneCode);
+        const playerTwoMills = this.countPlayerMills(playerTwoCode);
+
+        return (playerOnePieces - playerTwoPieces) + 2 * (playerOneMills - playerTwoMills);
+    }
+
+    countPlayerPieces(playerCode) {
+        let count = 0;
+
+        for (let r = 0; r < rows; ++r) {
+            for (let c = 0; c < columns; ++c) {
+                if (this.board[c][r] === playerCode) count++;
+            }
+        }
+
+        return count;
+    }
+
+    countPlayerMills(playerCode) {     // similar to checkMill function
+        let count = 0;
+        let oppositeCode = (playerCode == 1) ? 2 : 1;
+
+        for (let r = 0; r < rows; ++r) {
+            for (let i = 0; i < 5; ++i) {
+                let flag = 0;
+
+                for (let j = i; j < i + 3; ++j) {
+                    if (this.board[j][r] == playerCode) {
+                        continue;
+                    } else {
+                        flag = 1;
+                        break;
+                    }
+                }
+                if (flag == 0) {
+                    count++;
+                }
+            }
+
+            let flag = 0;
+            for (let c = 0; c < columns; ++c) {
+                if ((this.board[c][r] == oppositeCode) || (this.board[c][r] == 0)) {
+                    flag = 1;
+                    break;
+                }
+            }
+            if (flag == 0) {
+                count++;
+            }
+        }
+
+        for (let c = 0; c < columns; ++c) {
+            for (let i = 0; i < 5; ++i) {
+                let flag = 0;
+                for (let j = i; j < i + 3; ++j) {
+                    if (this.board[c][j] == playerCode) {
+                        continue;
+                    } else {
+                        flag = 1;
+                        break;
+                    }
+                }
+                if (flag == 0) {
+                    count++;
+                }
+            }
+
+            let flag = 0;
+            for (let r = 0; r < rows; ++r) {
+                if ((this.board[c][r] == oppositeCode) || (this.board[c][r] == 0)) {
+                    flag = 1;
+                    break;
+                }
+            }
+            if (flag == 0) {
+                count++;
+            }
+        }
+
+        return count;
+    }
+}
 
 function initializeGame() {
     clickSound = new sound("sound.wav");
     initializeArray();
+    currentState = new GameState(positionMatrix);
     alert("Player 1 turns first followed by Player 2");
+
+    if(numberOfTurns % 2 != 0) {    // agent's turn
+        //get the best move and update the currentState.board
+    }
+    else {  //player 1's turn
+        
+    }
 }
 
 function sound(src) {
@@ -47,7 +188,6 @@ function sound(src) {
 
 function initializeArray() {
     for (var i = 0; i < 7; i++) {
-        referenceMatrix[i] = new Array(7);
         positionMatrix[i] = new Array(7);
     }
 
@@ -55,19 +195,15 @@ function initializeArray() {
         for (var k = 0; k < 7; k++) {
             //Make all diagonal elements + boundary + center to zero
             if ((j == 3) || (k == 3) || (j == k) || (j + k == 6)) {
-                referenceMatrix[j][k] = 0;
                 positionMatrix[j][k] = 0;
             }
             else {
-                referenceMatrix[j][k] = -1;
                 positionMatrix[j][k] = -1;
             }
         }
     }
     //Finally making center also -1
-    referenceMatrix[3][3] = -1;
     positionMatrix[3][3] = -1;
-
 }
 
 function makeMove(X, Y) {
@@ -752,5 +888,85 @@ function update() {
         document.getElementById("turn").innerHTML = "P2";
     } else {
         document.getElementById("turn").innerHTML = "P1";
+    }
+}
+
+/* 
+
+- move game's variables and methods to GameState class
+
+- update initializeGame function to make a move based on who is playing
+
+- update makeMove function 
+    to make a move based on the param type (place or move to adj) and who is playing
+    makeMove(type, move) 
+    if type = 1 = place, move = { X, Y } 
+    if type = 2 = move, move = { from : { X, Y }, to: { X, Y } }
+
+- replace player 2 with the agent
+
+- replace positionMatrix with the board
+
+- getBestMove function 
+    type 1 = place returns { X, Y } 
+         2 = move  returns { from : { X, Y }, to: { X, Y } }   
+
+*/
+
+function getBestMove(type) {
+    let mx = -Infinity;
+    let bestMove;
+
+    const possibleMoves = currentState.getPossibleMoves(type);
+
+    for (let move of possibleMoves) {
+        let nextState = new GameState(currentState.board);
+
+        nextState.makeMove(type, move);
+
+        const ret = minimax(type, nextState, depth - 1, false);
+        if (ret > mx) {
+            mx = ret;
+            bestMove = move;
+        }
+    }
+
+    return bestMove;
+}
+
+function minimax(type, state, depth, agent) {
+    if (depth === 0 || state.checkGameOver()) {
+        return state.evaluate();
+    }
+
+    const possibleMoves = state.getPossibleMoves(type);
+
+    if (agent) {
+        let mx = -Infinity;
+
+        for (let move of possibleMoves) {
+            const nextState = new GameState(state.board);
+
+            nextState.makeMove(type, move);
+
+            const ret = minimax(type, nextState, depth - 1, false);
+            mx = Math.max(mx, ret);
+        }
+
+        return mx;
+    }
+    else {
+        let mn = Infinity;
+
+        for (let move of possibleMoves) {
+            const nextState = new GameState(state.board);
+
+            nextState.makeMove(type, move);
+
+            const ret = minimax(type, nextState, depth - 1, true);
+            mn = Math.min(mn, ret);
+        }
+
+        return mn;
     }
 }

@@ -23,7 +23,6 @@ var rows = 7;
 var columns = 7;
 var clickSound;
 var positionMatrix = new Array(7);
-var referenceMatrix = new Array(7);
 var canvas = document.getElementById("myCanvas");
 var context = canvas.getContext("2d");
 
@@ -43,7 +42,7 @@ function sound(src) {
     document.body.appendChild(this.sound);
     this.play = function () {
         this.sound.play();
-    }
+    };
 }
 
 function initializeArray() {
@@ -249,7 +248,7 @@ function makeMove(X, Y) {
                     greenBlocks--;
                 }
                 context.clearRect(xCenter - blockWidth - strokeWidth, yCenter - blockWidth - strokeWidth,
-                    2 * (blockWidth + strokeWidth), 2 * ( blockWidth + strokeWidth));
+                    2 * (blockWidth + strokeWidth), 2 * (blockWidth + strokeWidth));
                 positionMatrix[X][Y] = 0;
                 turnOffMill();
                 update();
@@ -270,21 +269,21 @@ function makeMove(X, Y) {
             //Checking for adjacent element.
             if (((X == lastX) || (Y == lastY))) {
                 if (X == 0 || X == 6 || Y == 0 || Y == 6) {
-                    if (((Math.abs(X - lastX) + Math.abs(Y - lastY)) == 3 ) || ((Math.abs(X - lastX) + Math.abs(Y - lastY)) == 1 )) {
+                    if (((Math.abs(X - lastX) + Math.abs(Y - lastY)) == 3) || ((Math.abs(X - lastX) + Math.abs(Y - lastY)) == 1)) {
                         //Remove previous block and make a new block at the the given position
                         positionMatrix[lastX][lastY] = 0;
                         clearBlock(lastCenterX, lastCenterY);
                         drawBlock(xCenter, yCenter, X, Y);
                     }
                 } else if (X == 1 || X == 5 || Y == 1 || Y == 5) {
-                    if (((Math.abs(X - lastX) + Math.abs(Y - lastY)) == 2 ) || ((Math.abs(X - lastX) + Math.abs(Y - lastY)) == 1 )) {
+                    if (((Math.abs(X - lastX) + Math.abs(Y - lastY)) == 2) || ((Math.abs(X - lastX) + Math.abs(Y - lastY)) == 1)) {
                         //Remove previous block and make a new block at the the given position
                         positionMatrix[lastX][lastY] = 0;
                         clearBlock(lastCenterX, lastCenterY);
                         drawBlock(xCenter, yCenter, X, Y);
                     }
                 } else if (X == 2 || X == 4 || Y == 2 || Y == 4) {
-                    if (((Math.abs(X - lastX) + Math.abs(Y - lastY)) == 1 )) {
+                    if (((Math.abs(X - lastX) + Math.abs(Y - lastY)) == 1)) {
                         //Remove previous block and make a new block at the the given position
                         positionMatrix[lastX][lastY] = 0;
                         clearBlock(lastCenterX, lastCenterY);
@@ -409,11 +408,6 @@ function makeMove(X, Y) {
         }
 
     }
-    //
-    // for (var r = 0; r < 7; r++) {
-    //     console.log(positionMatrix[0][r] + "\t" + positionMatrix[1][r] + "\t" + positionMatrix[2][r] + "\t" +
-    //         positionMatrix[3][r] + "\t" + positionMatrix[4][r] + "\t" + positionMatrix[5][r] + "\t" + positionMatrix[6][r]);
-    // }
 
     checkGameOver();
 }
@@ -427,13 +421,15 @@ function mouseClick(event) {
 
     //Check if touch event occurs in canvas or not
     if ((X >= 0 && X <= 550) && (Y >= 0 && Y <= 550)) {
+        //1st row
         if ((X >= 0 && X <= 75) && (Y >= 0 && Y <= 75)) {
-            makeMove(0, 0);
+            makeMove(0, 0);     //col, row
         } else if ((X >= 235 && X <= 315) && (Y >= 0 && Y <= 75)) {
             makeMove(3, 0);
         } else if ((X >= 475 && X <= 550) && (Y >= 0 && Y <= 75)) {
             makeMove(6, 0);
         }
+        //2nd row
         else if ((X >= 75 && X <= 155) && (Y >= 75 && Y <= 155)) {
             makeMove(1, 1);
         } else if ((X >= 235 && X <= 315) && (Y >= 75 && Y <= 155)) {
@@ -441,6 +437,7 @@ function mouseClick(event) {
         } else if ((X >= 395 && X <= 475) && (Y >= 75 && Y <= 155)) {
             makeMove(5, 1);
         }
+        //3rd row
         else if ((X >= 155 && X <= 235) && (Y >= 155 && Y <= 235)) {
             makeMove(2, 2);
         } else if ((X >= 235 && X <= 315) && (Y >= 155 && Y <= 235)) {
@@ -448,6 +445,7 @@ function mouseClick(event) {
         } else if ((X >= 315 && X <= 395) && (Y >= 155 && Y <= 235)) {
             makeMove(4, 2);
         }
+        //4th row
         else if ((X >= 0 && X <= 75) && (Y >= 235 && Y <= 315)) {
             makeMove(0, 3);
         } else if ((X >= 75 && X <= 155) && (Y >= 235 && Y <= 315)) {
@@ -461,6 +459,7 @@ function mouseClick(event) {
         } else if ((X >= 475 && X <= 550) && (Y >= 235 && Y <= 315)) {
             makeMove(6, 3);
         }
+        //5th row
         else if ((X >= 155 && X <= 235) && (Y >= 315 && Y <= 395)) {
             makeMove(2, 4);
         } else if ((X >= 235 && X <= 315) && (Y >= 315 && Y <= 395)) {
@@ -468,6 +467,7 @@ function mouseClick(event) {
         } else if ((X >= 315 && X <= 395) && (Y >= 315 && Y <= 395)) {
             makeMove(4, 4);
         }
+        //6th row
         else if ((X >= 75 && X <= 155) && (Y >= 395 && Y <= 475)) {
             makeMove(1, 5);
         } else if ((X >= 235 && X <= 315) && (Y >= 395 && Y <= 475)) {
@@ -475,7 +475,7 @@ function mouseClick(event) {
         } else if ((X >= 395 && X <= 475) && (Y >= 395 && Y <= 475)) {
             makeMove(5, 5);
         }
-
+        //7th row
         else if ((X >= 0 && X <= 75) && (Y >= 475 && Y <= 550)) {
             makeMove(0, 6);
         } else if ((X >= 235 && X <= 315) && (Y >= 475 && Y <= 550)) {
@@ -519,7 +519,7 @@ function clearBlock(xI, yI) {
     clickSound.play();
     //Clear canvas at previous position
     context.clearRect(xI - blockWidth - strokeWidth, yI - blockWidth - strokeWidth,
-        2 * (blockWidth + strokeWidth), 2 * ( blockWidth + strokeWidth));
+        2 * (blockWidth + strokeWidth), 2 * (blockWidth + strokeWidth));
     positionMatrix[lastX][lastY] = 0;
 
 }
@@ -627,7 +627,7 @@ function checkMill(x, y, playerCode) {
 }
 
 function checkThreeLeft(playerCode) {
-    return (numberOfTurns >= 18 && (((playerCode == 1) ? greenBlocks : redBlocks) == 3 ))
+    return (numberOfTurns >= 18 && (((playerCode == 1) ? greenBlocks : redBlocks) == 3));
 }
 
 function checkGameOver() {
@@ -658,7 +658,7 @@ function allArePartOfMill(playerCode) {
     //return false if atleast one of them is not a part of the mill
     for (var i = 0; i < rows; i++) {
         for (var j = 0; j < columns; j++) {
-            if (positionMatrix[i][j] == playerCode){
+            if (positionMatrix[i][j] == playerCode) {
                 if (!checkMill(i, j, playerCode)) {
                     return false;
                 }
@@ -668,6 +668,7 @@ function allArePartOfMill(playerCode) {
     }
     return true;
 }
+
 function canMove(playerCode, blocksLeft) {
     //If only 3 are left then it can always move anywhere
     if (blocksLeft == 3) {

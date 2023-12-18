@@ -26,8 +26,26 @@ var positionMatrix = new Array(7);
 var canvas = document.getElementById("myCanvas");
 var context = canvas.getContext("2d");
 
+// 0 = Human
+// 1 = minimax
+// 2 = alphaBeta
+var agent1 = 0; 
+var agent2 = 0; 
+
 const depth = 5;
 let currentState;
+
+function selectAgent(agent, player, type) {
+    // Update the dropdown button label with the selected agent
+    if (player === 1) {
+        document.querySelector('.p1').textContent = agent;
+        agent1 = type;
+    }
+    else {
+        document.querySelector('.p2').textContent = agent;
+        agent2 = type;
+    }
+}
 
 class GameState {
     constructor(positionMatrix) {

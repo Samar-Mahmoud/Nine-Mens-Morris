@@ -1,28 +1,62 @@
 <!DOCTYPE HTML>
 <html>
-<head>
-    <meta charset="UTF-8">
-    <link rel="stylesheet" type="text/css" href="style.css">
-    <title>Nine Men's Morris</title>
-    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
-    <link href='https://fonts.googleapis.com/css?family=Roboto+Slab:400,100,300,700' rel='stylesheet' type='text/css'>
-</head>
-<body onload="initializeGame()">
+    <head>
+        <meta charset="UTF-8">
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <title>Nine Men's Morris</title>
+        <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet" type="text/css">
+        <link href='https://fonts.googleapis.com/css?family=Roboto+Slab:400,100,300,700' rel='stylesheet' type='text/css'>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    </head>
+    <body onload="initializeGame()">
+        <div class="header">
+            <span class="turn">Turn : <span id="turn">P1</span></span>
+            <span class="message">Message : <span id="message">Click on empty spot to place your piece</span></span>
+        </div>
 
-<div class="header">
-    <span class="turn">Turn : <span id="turn">P1</span></span>
-    <span class="message">Message : <span id="message">Click on empty spot to place your piece</span></span>
-</div>
-<br>
-<div class="mid">
-    <canvas height="550" width="550" id="myCanvas">
-        Your browser does not support the HTML5 canvas tag.
-    </canvas>
-</div>
+        <div class="container">
+            <div class="player-type player2">
+                <p style="margin-bottom: 50px; font-weight: 500; font-size: 22px;">Green</p>
+                <div>
+                    <span style="color: #fff; padding-right: 10px; display: inline-block;">Agent </span>
+                    <div class="btn-group fixed-width-dropdown">
+                        <button type="button" class="btn btn-secondary p1">Human</button>
+                        <button type="button" class="btn btn-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false" data-bs-reference="parent"></button>
+                        <ul class="dropdown-menu fixed-width-dropdown">
+                            <li><a class="dropdown-item" onclick="selectAgent('Human', 1, 0)">Human</a></li>
+                            <li><a class="dropdown-item" onclick="selectAgent('minimax', 1, 1)">minimax</a></li>
+                            <li><a class="dropdown-item" onclick="selectAgent('Alpha-Beta-Pruning', 1, 2)">Alpha-Beta-Pruning</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
 
-<p class="copyright">Copyright &#169 Rahul Yadav
-    <script type="text/javascript">document.write(new Date().getFullYear());</script>
-</p>
-<script src="script.js"></script>
-</body>
+            <div class="game">
+                <div class="mid">
+                    <canvas height="550" width="550" id="myCanvas">
+                        Your browser does not support the HTML5 canvas tag.
+                    </canvas>
+                </div>
+            </div>
+            
+            <div class="player-type player2">
+                <p style="margin-bottom: 50px; font-weight: 500; font-size: 22px;">Red</p>
+                <div>
+                    <span style="color: #fff; padding-right: 10px;">Agent</span>
+                    <div class="btn-group fixed-width-dropdown">
+                        <button type="button" class="btn btn-secondary p2">Human</button>
+                        <button type="button" class="btn btn-secondary dropdown-toggle dropdown-toggle-split" data-bs-toggle="dropdown" aria-expanded="false" data-bs-reference="parent"></button>
+                        <ul class="dropdown-menu fixed-width-dropdown">
+                            <li><a class="dropdown-item" onclick="selectAgent('Human', 2, 0)">Human</a></li>
+                            <li><a class="dropdown-item" onclick="selectAgent('minimax', 2, 1)">minimax</a></li>
+                            <li><a class="dropdown-item" onclick="selectAgent('Alpha-Beta-Pruning', 2, 2)">Alpha-Beta-Pruning</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+        <script src="script.js"></script>
+    </body>
 </html>

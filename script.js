@@ -16,6 +16,18 @@ var positionMatrix = new Array(7);
 var canvas = document.getElementById("myCanvas");
 var context = canvas.getContext("2d");
 var turn = 0;
+var prevTurn = 0;
+var millRed = 0;
+var millGreen = 0;
+var redBlocks = 0;
+var greenBlocks = 0;
+var activeRed = false, activeGreen = false;
+var greenThreeLeft = false, redThreeLeft = false;
+var lastX = 0;
+var lastY = 0;
+var lastCenterX = 0;
+var lastCenterY = 0;
+
 
 // 0 = Human
 // 1 = minimax
@@ -58,7 +70,6 @@ class GameState {
 
     copy() {
         const copiedInstance = new GameState(this.board);
-
         copiedInstance.redBlocks = this.redBlocks;
         copiedInstance.greenBlocks = this.greenBlocks;
         copiedInstance.isMillRed = this.isMillRed;
@@ -71,7 +82,6 @@ class GameState {
         copiedInstance.lastY = this.lastY;
         copiedInstance.lastCenterX = this.lastCenterX;
         copiedInstance.lastCenterY = this.lastCenterY;
-
         return copiedInstance;
     }
 
@@ -242,7 +252,6 @@ class GameState {
         var yCenter;
         var xCenter;
 
-        console.log(turn, type, move);
 
         var X, Y;
         if ((type == 2 || type == 3) &&
@@ -306,7 +315,7 @@ class GameState {
                     document.getElementById("message").innerHTML = "Click on empty spot to place your piece";
                 }
             }
-            if (numberOfTurns == 17) {
+            if (this.redBlocks === 9 || this.greenBlocks === 9) {
                 document.getElementById("message").innerHTML = "Now, Move one step by clicking on Block";
             }
         }
@@ -356,6 +365,7 @@ class GameState {
                 }
 
                 if ((this.board[X][Y] == 0)) {
+                    let playerCode = this.isActiveGreen ? playerOneCode : playerTwoCode;
                     //Checking for adjacent element.
                     if (type === 2 && ((X == this.lastX) || (Y == this.lastY))) {
                         if (X == 0 || X == 6 || Y == 0 || Y == 6) {
@@ -364,7 +374,31 @@ class GameState {
                                 this.board[this.lastX][this.lastY] = 0;
                                 this.clearBlock(this.lastCenterX, this.lastCenterY);
                                 this.drawBlock(xCenter, yCenter, X, Y);
-                                turn = 1 - turn;
+
+                                if (playerCode === playerOneCode) {
+                                    document.getElementById("turn").innerHTML = "P2";
+                                }
+                                else {
+                                    document.getElementById("turn").innerHTML = "P1";
+                                }
+                                if (this.checkMill(X, Y, playerCode)) {
+                                    if (playerCode === 1) {
+                                        this.isMillGreen = true;
+                                    }
+                                    else {
+                                        this.isMillRed = true;
+                                    }
+                                    if (playerCode === playerOneCode) {
+                                        document.getElementById("turn").innerHTML = "P1";
+                                    }
+                                    else {
+                                        document.getElementById("turn").innerHTML = "P2";
+                                    }
+                                    document.getElementById("message").innerHTML = "A Mill is formed. Click on green block to remove it.";
+                                } else {
+                                    turn = 1 - turn;
+                                    document.getElementById("message").innerHTML = "Click on empty spot to place your piece";
+                                }
                             }
                         } else if (X == 1 || X == 5 || Y == 1 || Y == 5) {
                             if (((Math.abs(X - this.lastX) + Math.abs(Y - this.lastY)) == 2) || ((Math.abs(X - this.lastX) + Math.abs(Y - this.lastY)) == 1)) {
@@ -372,7 +406,31 @@ class GameState {
                                 this.board[this.lastX][this.lastY] = 0;
                                 this.clearBlock(this.lastCenterX, this.lastCenterY);
                                 this.drawBlock(xCenter, yCenter, X, Y);
-                                turn = 1 - turn;
+
+                                if (playerCode === playerOneCode) {
+                                    document.getElementById("turn").innerHTML = "P2";
+                                }
+                                else {
+                                    document.getElementById("turn").innerHTML = "P1";
+                                }
+                                if (this.checkMill(X, Y, playerCode)) {
+                                    if (playerCode === 1) {
+                                        this.isMillGreen = true;
+                                    }
+                                    else {
+                                        this.isMillRed = true;
+                                    }
+                                    if (playerCode === playerOneCode) {
+                                        document.getElementById("turn").innerHTML = "P1";
+                                    }
+                                    else {
+                                        document.getElementById("turn").innerHTML = "P2";
+                                    }
+                                    document.getElementById("message").innerHTML = "A Mill is formed. Click on green block to remove it.";
+                                } else {
+                                    turn = 1 - turn;
+                                    document.getElementById("message").innerHTML = "Click on empty spot to place your piece";
+                                }
                             }
                         } else if (X == 2 || X == 4 || Y == 2 || Y == 4) {
                             if (((Math.abs(X - this.lastX) + Math.abs(Y - this.lastY)) == 1)) {
@@ -380,22 +438,93 @@ class GameState {
                                 this.board[this.lastX][this.lastY] = 0;
                                 this.clearBlock(this.lastCenterX, this.lastCenterY);
                                 this.drawBlock(xCenter, yCenter, X, Y);
-                                turn = 1 - turn;
+
+                                if (playerCode === playerOneCode) {
+                                    document.getElementById("turn").innerHTML = "P2";
+                                }
+                                else {
+                                    document.getElementById("turn").innerHTML = "P1";
+                                }
+                                if (this.checkMill(X, Y, playerCode)) {
+                                    if (playerCode === 1) {
+                                        this.isMillGreen = true;
+                                    }
+                                    else {
+                                        this.isMillRed = true;
+                                    }
+                                    if (playerCode === playerOneCode) {
+                                        document.getElementById("turn").innerHTML = "P1";
+                                    }
+                                    else {
+                                        document.getElementById("turn").innerHTML = "P2";
+                                    }
+                                    document.getElementById("message").innerHTML = "A Mill is formed. Click on green block to remove it.";
+                                } else {
+                                    turn = 1 - turn;
+                                    document.getElementById("message").innerHTML = "Click on empty spot to place your piece";
+                                }
                             }
                         }
-
                     } else if (type === 3) {
                         if (this.isGreenThreeLeft && (this.board[this.lastX][this.lastY] == playerOneCode)) {
                             this.board[this.lastX][this.lastY] = 0;
                             this.clearBlock(this.lastCenterX, this.lastCenterY);
                             this.drawBlock(xCenter, yCenter, X, Y);
-                            turn = 1 - turn;
+
+                            if (playerCode === playerOneCode) {
+                                document.getElementById("turn").innerHTML = "P2";
+                            }
+                            else {
+                                document.getElementById("turn").innerHTML = "P1";
+                            }
+                            if (this.checkMill(X, Y, playerCode)) {
+                                if (playerCode === 1) {
+                                    this.isMillGreen = true;
+                                }
+                                else {
+                                    this.isMillRed = true;
+                                }
+                                if (playerCode === playerOneCode) {
+                                    document.getElementById("turn").innerHTML = "P1";
+                                }
+                                else {
+                                    document.getElementById("turn").innerHTML = "P2";
+                                }
+                                document.getElementById("message").innerHTML = "A Mill is formed. Click on green block to remove it.";
+                            } else {
+                                turn = 1 - turn;
+                                document.getElementById("message").innerHTML = "Click on empty spot to place your piece";
+                            }
                         }
                         else if (this.isRedThreeLeft && (this.board[this.lastX][this.lastY] == playerTwoCode)) {
                             this.board[this.lastX][this.lastY] = 0;
                             this.clearBlock(this.lastCenterX, this.lastCenterY);
                             this.drawBlock(xCenter, yCenter, X, Y);
-                            turn = 1 - turn;
+
+                            if (playerCode === playerOneCode) {
+                                document.getElementById("turn").innerHTML = "P2";
+                            }
+                            else {
+                                document.getElementById("turn").innerHTML = "P1";
+                            }
+                            if (this.checkMill(X, Y, playerCode)) {
+                                if (playerCode === 1) {
+                                    this.isMillGreen = true;
+                                }
+                                else {
+                                    this.isMillRed = true;
+                                }
+                                if (playerCode === playerOneCode) {
+                                    document.getElementById("turn").innerHTML = "P1";
+                                }
+                                else {
+                                    document.getElementById("turn").innerHTML = "P2";
+                                }
+                                document.getElementById("message").innerHTML = "A Mill is formed. Click on green block to remove it.";
+                            } else {
+                                turn = 1 - turn;
+                                document.getElementById("message").innerHTML = "Click on empty spot to place your piece";
+                            }
                         }
                     } else {
                         this.turnOffActive(this.lastCenterX, this.lastCenterY);
@@ -636,14 +765,15 @@ class GameState {
      *  4 = remove opp
      */
     getMoveType(playerCode) {
-        if ((this.isMillGreen && playerCode === playerOneCode) || (this.isMillRed && playerCode === playerTwoCode)) {
+        console.log(this.isMillGreen, this.isMillRed);
+        if ((this.isMillGreen && turn === 0) || (this.isMillRed && turn === 1)) {
             return 4;
         }
         else if (numberOfTurns < 18) {
             return 1;
         }
         else if (numberOfTurns >= 18) {
-            if ((this.isGreenThreeLeft && playerCode === playerOneCode) || (this.isRedThreeLeft && playerCode === playerTwoCode)) {
+            if ((this.isGreenThreeLeft && turn === 0) || (this.isRedThreeLeft && turn === 1)) {
                 return 3;
             }
             else {
@@ -925,8 +1055,6 @@ class GameState {
     }
 
     drawBoard() {
-        console.log("from drawBoard");
-        console.log(this.board);
         var xCenter, yCenter;
         for (var X = 0; X < rows; X++) {
             for (var Y = 0; Y < columns; Y++) {
@@ -950,8 +1078,22 @@ function initializeGame() {
 
 function start() {
     function makeMoveWithDelay(type, move) {
+        turn = prevTurn;
+        currentState.isMillRed = millRed;
+        currentState.isMillGreen = millGreen;
+        currentState.redBlocks = redBlocks;
+        currentState.greenBlocks = greenBlocks;
+        currentState.isActiveRed = activeRed;
+        currentState.isActiveGreen = activeGreen;
+        currentState.isGreenThreeLeft = greenThreeLeft;
+        currentState.isRedThreeLeft = redThreeLeft;
+        currentState.lastX = lastX;
+        currentState.lastY = lastY;
+        currentState.lastCenterX = lastCenterX;
+        currentState.lastCenterY = lastCenterY;
+
         currentState.makeMove(type, move);
-        return new Promise(resolve => setTimeout(resolve, 6000));
+        return new Promise(resolve => setTimeout(resolve, 1000));
     }
 
     async function playerMove(type, agent) {
@@ -963,10 +1105,25 @@ function start() {
                 moved = true;
             }
         } else if (agent === 1) { // minimax
+            prevTurn = turn;
+            millRed = currentState.isMillRed;
+            millGreen = currentState.isMillGreen;
+            redBlocks = currentState.redBlocks;
+            greenBlocks = currentState.greenBlocks;
+            activeRed = currentState.isActiveRed;
+            activeGreen = currentState.isActiveGreen;
+            greenThreeLeft = currentState.isGreenThreeLeft;
+            redThreeLeft = currentState.isRedThreeLeft;
+            lastX = currentState.lastX;
+            lastY = currentState.lastY;
+            lastCenterX = currentState.lastCenterX;
+            lastCenterY = currentState.lastCenterY;
+
             let move = getBestMove(type);
             let bMove = move.b;
             // let fMove = move.f;
             // console.log("xxx", agent, bMove === fMove);
+            console.log(move);
             await makeMoveWithDelay(type, bMove);
             moved = true;
         } else { // alphaBeta
@@ -979,6 +1136,8 @@ function start() {
 
     async function playTurn(playerCode, agent) {
         type = currentState.getMoveType(playerCode);
+
+        console.log(turn, type);
 
         const moved = await playerMove(type, agent);
 
@@ -1138,8 +1297,7 @@ function getBestMove(type) {
     let bestMove;
 
     const possibleMoves = currentState.getPossibleMoves(type);
-    return { b: possibleMoves[0] };
-    
+
     for (let move of possibleMoves) {
         let nextState = _.cloneDeep(currentState);
         nextState.makeMove(type, move);
@@ -1155,7 +1313,6 @@ function getBestMove(type) {
 }
 
 function minimax(type, state, depth, agent) {
-    return 0;
     if (depth === 0 || state.checkGameOver()) {
         return state.evaluate();
     }

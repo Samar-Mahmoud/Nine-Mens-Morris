@@ -16,6 +16,7 @@ var positionMatrix = new Array(7);
 var canvas = document.getElementById("myCanvas");
 var context = canvas.getContext("2d");
 var turn = 0;
+
 var prevTurn = 0;
 var millRed = 0;
 var millGreen = 0;
@@ -27,13 +28,14 @@ var lastX = 0;
 var lastY = 0;
 var lastCenterX = 0;
 var lastCenterY = 0;
+var search = 0;
 
 
 // 0 = Human
 // 1 = minimax
 // 2 = alphaBeta
-var agent1 = 1;
-var agent2 = 1;
+var agent1 = 2;
+var agent2 = 2;
 
 const depth = 3;
 var currentState;
@@ -252,6 +254,7 @@ class GameState {
         var yCenter;
         var xCenter;
 
+        console.log(search, turn, type, move);
 
         var X, Y;
         if ((type == 2 || type == 3) &&
@@ -574,7 +577,7 @@ class GameState {
                     context.stroke();
                 }
 
-                if (agent) {
+                if (agent && (this.isActiveGreen || this.isActiveRed)) {
                     this.makeMove(type, { X: move.to.X, Y: move.to.Y });
                 }
             }
@@ -765,14 +768,13 @@ class GameState {
      *  4 = remove opp
      */
     getMoveType(playerCode) {
-        console.log(this.isMillGreen, this.isMillRed);
         if ((this.isMillGreen && turn === 0) || (this.isMillRed && turn === 1)) {
             return 4;
         }
-        else if (numberOfTurns < 18) {
+        else if (this.redBlocks < 9 && this.greenBlocks < 9) {
             return 1;
         }
-        else if (numberOfTurns >= 18) {
+        else {
             if ((this.isGreenThreeLeft && turn === 0) || (this.isRedThreeLeft && turn === 1)) {
                 return 3;
             }
@@ -1091,6 +1093,7 @@ function start() {
         currentState.lastY = lastY;
         currentState.lastCenterX = lastCenterX;
         currentState.lastCenterY = lastCenterY;
+        search = 0;
 
         currentState.makeMove(type, move);
         return new Promise(resolve => setTimeout(resolve, 1000));
@@ -1119,15 +1122,28 @@ function start() {
             lastCenterX = currentState.lastCenterX;
             lastCenterY = currentState.lastCenterY;
 
-            let move = getBestMove(type);
-            let bMove = move.b;
-            // let fMove = move.f;
-            // console.log("xxx", agent, bMove === fMove);
-            console.log(move);
-            await makeMoveWithDelay(type, bMove);
+            search = 1;
+            let move = getBestMove(type);            
+            await makeMoveWithDelay(type, move);
             moved = true;
         } else { // alphaBeta
-            currentState.makeMove(type, getBestMove_ABP(type));
+            prevTurn = turn;
+            millRed = currentState.isMillRed;
+            millGreen = currentState.isMillGreen;
+            redBlocks = currentState.redBlocks;
+            greenBlocks = currentState.greenBlocks;
+            activeRed = currentState.isActiveRed;
+            activeGreen = currentState.isActiveGreen;
+            greenThreeLeft = currentState.isGreenThreeLeft;
+            redThreeLeft = currentState.isRedThreeLeft;
+            lastX = currentState.lastX;
+            lastY = currentState.lastY;
+            lastCenterX = currentState.lastCenterX;
+            lastCenterY = currentState.lastCenterY;
+
+            search = 1;
+            let move = getBestMove_ABP(type)
+            await makeMoveWithDelay(type, move);
             moved = true;
         }
 
@@ -1136,8 +1152,6 @@ function start() {
 
     async function playTurn(playerCode, agent) {
         type = currentState.getMoveType(playerCode);
-
-        console.log(turn, type);
 
         const moved = await playerMove(type, agent);
 
@@ -1297,6 +1311,7 @@ function getBestMove(type) {
     let bestMove;
 
     const possibleMoves = currentState.getPossibleMoves(type);
+    console.log(possibleMoves);
 
     for (let move of possibleMoves) {
         let nextState = _.cloneDeep(currentState);
@@ -1309,7 +1324,7 @@ function getBestMove(type) {
         }
     }
     currentState.drawBoard();
-    return { b: bestMove, f: possibleMoves[0] };
+    return bestMove;
 }
 
 function minimax(type, state, depth, agent) {
@@ -1355,7 +1370,7 @@ function getBestMove_ABP(type) {
     const possibleMoves = currentState.getPossibleMoves(type);
 
     for (let move of possibleMoves) {
-        const nextState = _.cloneDeep(state);
+        const nextState = _.cloneDeep(currentState);
         nextState.makeMove(type, move);
 
         const ret = alpha_beta_pruning(type, nextState, depth - 1, -Infinity, Infinity, false);
@@ -1364,7 +1379,7 @@ function getBestMove_ABP(type) {
             bestMove = move;
         }
     }
-
+    currentState.drawBoard();
     return bestMove;
 }
 

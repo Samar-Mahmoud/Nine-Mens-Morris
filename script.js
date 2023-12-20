@@ -19,8 +19,8 @@ var context = canvas.getContext("2d");
 // 0 = Human
 // 1 = minimax
 // 2 = alphaBeta
-var agent1 = 0;
-var agent2 = 0;
+var agent1 = 1;
+var agent2 = 1;
 
 const depth = 5;
 var currentState;
@@ -55,19 +55,28 @@ class GameState {
         this.lastCenterY = 0;
     }
 
-    makeMove(type, move) {
-        var yCenter;
-        var xCenter;
+    copy() {
+        const copiedInstance = new GameState(this.board);
+    
+        copiedInstance.redBlocks = this.redBlocks;
+        copiedInstance.greenBlocks = this.greenBlocks;
+        copiedInstance.isMillRed = this.isMillRed;
+        copiedInstance.isMillGreen = this.isMillGreen;
+        copiedInstance.isActiveRed = this.isActiveRed;
+        copiedInstance.isActiveGreen = this.isActiveGreen;
+        copiedInstance.isGreenThreeLeft = this.isGreenThreeLeft;
+        copiedInstance.isRedThreeLeft = this.isRedThreeLeft;
+        copiedInstance.lastX = this.lastX;
+        copiedInstance.lastY = this.lastY;
+        copiedInstance.lastCenterX = this.lastCenterX;
+        copiedInstance.lastCenterY = this.lastCenterY;
+    
+        return copiedInstance;
+      }
 
-        var X, Y;
-        if ((numberOfTurns % 2 && agent2 !== 0 && (type == 2 || type == 3)) || (numberOfTurns % 2 === 0 && agent1 !== 0 && (type == 2 || type == 3))) {
-            X = move.from.X;
-            Y = move.from.Y;
-        }
-        else {
-            X = move.X;
-            Y = move.Y;
-        }
+    XYCenters(X, Y) {
+        var xCenter;
+        var yCenter;
         switch (X) {
             case 0: {
                 switch (Y) {
@@ -225,12 +234,32 @@ class GameState {
                 break;
             }
         }
+        return {x: xCenter, y: yCenter};
+    }
+
+    makeMove(type, move) {
+        var yCenter;
+        var xCenter;
+
+        var X, Y;
+        if ((numberOfTurns % 2 && agent2 !== 0 && (type == 2 || type == 3)) || (numberOfTurns % 2 === 0 && agent1 !== 0 && (type == 2 || type == 3))) {
+            X = move.from.X;
+            Y = move.from.Y;
+        }
+        else {
+            X = move.X;
+            Y = move.Y;
+        }
+        
+        let XY = this.XYCenters(X, Y);
+        xCenter = XY.x;
+        yCenter = XY.y;
 
         // place
         if (type === 1) {
             let { X, Y } = move;
 
-            clickSound.play();
+            ////clickSound.play();
             if (numberOfTurns % 2 != 0) {
                 //Player two made a move, hence made a block red.
                 this.redBlocks++;
@@ -357,7 +386,7 @@ class GameState {
                 // a player have after clicking on a  particular position of his own color.
                 if (numberOfTurns % 2 != 0 && this.board[X][Y] == 2) {
                     //Player two made a move, hence made a block fade red.
-                    clickSound.play();
+                    ////clickSound.play();
                     this.isActiveRed = true;
                     if (this.checkThreeLeft(playerTwoCode)) {
                         this.isRedThreeLeft = true;
@@ -376,7 +405,7 @@ class GameState {
                 }
                 else if (numberOfTurns % 2 == 0 && this.board[X][Y] == 1) {
                     //Player one just made a move, hence made a block green
-                    clickSound.play();
+                    //clickSound.play();
                     this.isActiveGreen = true;
                     if (this.checkThreeLeft(playerOneCode)) {
                         this.isGreenThreeLeft = true;
@@ -408,7 +437,7 @@ class GameState {
                 //Check that it shouldn't be the part of other mill
                 if (!this.checkMill(X, Y, ((this.isMillRed) ? 1 : 2)) || this.allArePartOfMill(((this.isMillRed) ? 1 : 2))) {
                     //Remove that block and update array value to zero
-                    clickSound.play();
+                    //clickSound.play();
                     if (playerCode == 1) {
                         this.redBlocks--;
                         document.getElementById("message").innerHTML = "Red block removed";
@@ -580,7 +609,6 @@ class GameState {
 
         return count;
     }
-
     /**
      *  1 = place
      *  2 = move adj
@@ -790,7 +818,7 @@ class GameState {
     }
 
     turnOffActive(x, y) {
-        clickSound.play();
+        //clickSound.play();
         context.beginPath();
         context.arc(x, y, blockWidth, 0, 2 * Math.PI, false);
         if (this.isActiveRed) {
@@ -806,18 +834,19 @@ class GameState {
         this.isActiveGreen = false;
     }
 
-    clearBlock(xI, yI) {
-        clickSound.play();
+    clearBlock(xI, yI, flag = 0, X = 0, Y = 0) {
+        //clickSound.play();
         //Clear canvas at previous position
         context.clearRect(xI - blockWidth - strokeWidth, yI - blockWidth - strokeWidth,
             2 * (blockWidth + strokeWidth), 2 * (blockWidth + strokeWidth));
-        this.board[this.lastX][this.lastY] = 0;
+        if (flag == 0)this.board[this.lastX][this.lastY] = 0;
+        else this.board[X][Y] = 0;
     }
 
-    drawBlock(x, y, X, Y) {
+    drawBlock(x, y, X, Y, color = 0) {
         context.beginPath();
         context.arc(x, y, blockWidth, 0, 2 * Math.PI, false);
-        if (this.isActiveRed) {
+        if (this.isActiveRed || color == 2) {
             this.board[X][Y] = 2;
             context.fillStyle = '#F44336';
             if (this.checkMill(X, Y, 2)) {
@@ -869,6 +898,21 @@ class GameState {
         }
         return true;
     }
+
+    drawBoard() {
+        console.log("from drawBoard");
+        console.log(this.board);
+        var xCenter, yCenter;
+        for (var X = 0; X < rows; X++) {
+            for (var Y = 0; Y < columns; Y++) {            
+                let XY = this.XYCenters(X, Y);
+                xCenter = XY.x;
+                yCenter = XY.y;
+                if (this.board[X][Y] == 0)this.clearBlock(xCenter, yCenter, 1, X, Y);
+                else if (~this.board[X][Y])this.drawBlock(xCenter, yCenter, X, Y, this.board[X][Y]);
+            }
+        }
+    }
 }
 
 function initializeGame() {
@@ -880,7 +924,7 @@ function initializeGame() {
 }
 
 function start() {
-    // while (currentState.checkGameOver() === false) {
+    while (currentState.checkGameOver() === false) {
         let moved = false;
 
         if (numberOfTurns % 2 != 0) {    // player 2's turn
@@ -893,8 +937,8 @@ function start() {
                 }
             }
             else if (agent2 === 1) { // minimax
-                currentState.makeMove(type, getBestMove(type));
-                moved = true;
+                currentState.makeMove(type, getBestMove(type)); 
+                moved = true; 
             }
             else {  // alphaBeta
                 currentState.makeMove(type, getBestMove_ABP(type));
@@ -903,8 +947,6 @@ function start() {
         }
         else {  //player 1's turn
             type = currentState.getMoveType(playerOneCode);
-            console.log(type);
-
             if (agent1 === 0) {
                 if (clickedX && clickedY) {
                     console.log(clickedX, clickedY);
@@ -913,8 +955,8 @@ function start() {
                 }
             }
             else if (agent1 === 1) {
-                currentState.makeMove(type, getBestMove(type));
-                moved = true;
+                currentState.makeMove(type, getBestMove(type)); 
+                moved = true; 
             }
             else {
                 currentState.makeMove(type, getBestMove_ABP(type));
@@ -925,7 +967,7 @@ function start() {
         if (moved) {
             numberOfTurns++;
         }
-    // }
+    }
 }
 
 function sound(src) {
@@ -1064,23 +1106,23 @@ function getBestMove(type) {
     let bestMove;
 
     const possibleMoves = currentState.getPossibleMoves(type);
-
+    
     for (let move of possibleMoves) {
-        let nextState = new GameState(currentState.board);
-
+        let nextState =  _.cloneDeep(currentState);
         nextState.makeMove(type, move);
-
         const ret = minimax(type, nextState, depth - 1, false);
         if (ret > mx) {
             mx = ret;
             bestMove = move;
         }
     }
-
+    currentState.drawBoard();
     return bestMove;
 }
 
 function minimax(type, state, depth, agent) {
+    console.log("from minimax")
+    return 0;
     if (depth === 0 || state.checkGameOver()) {
         return state.evaluate();
     }
@@ -1091,10 +1133,9 @@ function minimax(type, state, depth, agent) {
         let mx = -Infinity;
 
         for (let move of possibleMoves) {
-            const nextState = new GameState(state.board);
+            const nextState =  _.cloneDeep(state);
 
             nextState.makeMove(type, move);
-
             const ret = minimax(type, nextState, depth - 1, false);
             mx = Math.max(mx, ret);
         }
@@ -1105,10 +1146,9 @@ function minimax(type, state, depth, agent) {
         let mn = Infinity;
 
         for (let move of possibleMoves) {
-            const nextState = new GameState(state.board);
+            const nextState =  _.cloneDeep(state);
 
             nextState.makeMove(type, move);
-
             const ret = minimax(type, nextState, depth - 1, true);
             mn = Math.min(mn, ret);
         }

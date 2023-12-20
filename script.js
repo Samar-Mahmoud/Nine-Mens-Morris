@@ -738,6 +738,7 @@ class GameState {
                 console.log("Only 2 " + ((this.greenBlocks < 3) ? "Green" : "Red") + " blocks left !\n" +
                     "Hence, Player " + ((this.greenBlocks < 3) ? 2 : 1) + " wins !");
                 // location.reload(true);
+                return true;
             }
             else {
                 //Check if no adjacent element available for any of the player.
@@ -745,10 +746,12 @@ class GameState {
                     console.log("No possible moves left for Player " + playerOneCode + "\n" +
                         "Hence, Player " + playerTwoCode + " wins !");
                     // location.reload(true);
+                    return true;
                 } else if (!this.canMove(playerTwoCode, this.redBlocks)) {
                     console.log("No possible moves left for Player " + playerTwoCode + "\n" +
                         "Hence, Player " + playerOneCode + " wins !");
                     // location.reload(true);
+                    return true;
                 }
             }
         }

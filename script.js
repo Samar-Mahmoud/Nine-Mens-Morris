@@ -57,7 +57,7 @@ class GameState {
 
     copy() {
         const copiedInstance = new GameState(this.board);
-    
+
         copiedInstance.redBlocks = this.redBlocks;
         copiedInstance.greenBlocks = this.greenBlocks;
         copiedInstance.isMillRed = this.isMillRed;
@@ -70,9 +70,9 @@ class GameState {
         copiedInstance.lastY = this.lastY;
         copiedInstance.lastCenterX = this.lastCenterX;
         copiedInstance.lastCenterY = this.lastCenterY;
-    
+
         return copiedInstance;
-      }
+    }
 
     XYCenters(X, Y) {
         var xCenter;
@@ -234,15 +234,18 @@ class GameState {
                 break;
             }
         }
-        return {x: xCenter, y: yCenter};
+        return { x: xCenter, y: yCenter };
     }
 
     makeMove(type, move) {
         var yCenter;
         var xCenter;
 
+        console.log(numberOfTurns, type, move);
+
         var X, Y;
-        if ((numberOfTurns % 2 && agent2 !== 0 && (type == 2 || type == 3)) || (numberOfTurns % 2 === 0 && agent1 !== 0 && (type == 2 || type == 3))) {
+        if ((type == 2 || type == 3) &&
+            ((numberOfTurns % 2 && agent2 !== 0 && this.isActiveRed === false) || (numberOfTurns % 2 === 0 && agent1 !== 0 && this.isActiveGreen === false))) {
             X = move.from.X;
             Y = move.from.Y;
         }
@@ -250,7 +253,7 @@ class GameState {
             X = move.X;
             Y = move.Y;
         }
-        
+
         let XY = this.XYCenters(X, Y);
         xCenter = XY.x;
         yCenter = XY.y;
@@ -311,8 +314,14 @@ class GameState {
 
             if (numberOfTurns % 2) {
                 if (agent2 !== 0) {
-                    X = move.from.X;
-                    Y = move.from.Y;
+                    if (this.isActiveRed === false) {
+                        X = move.from.X;
+                        Y = move.from.Y;
+                    }
+                    else {
+                        X = move.X;
+                        Y = move.Y;
+                    }
                     agent = true;
                 }
                 else {
@@ -322,8 +331,14 @@ class GameState {
             }
             else if (numberOfTurns % 2 == 0) {
                 if (agent1 !== 0) {
-                    X = move.from.X;
-                    Y = move.from.Y;
+                    if (this.isActiveGreen === false) {
+                        X = move.from.X;
+                        Y = move.from.Y;
+                    }
+                    else {
+                        X = move.X;
+                        Y = move.Y;
+                    }
                     agent = true;
                 }
                 else {
@@ -839,7 +854,7 @@ class GameState {
         //Clear canvas at previous position
         context.clearRect(xI - blockWidth - strokeWidth, yI - blockWidth - strokeWidth,
             2 * (blockWidth + strokeWidth), 2 * (blockWidth + strokeWidth));
-        if (flag == 0)this.board[this.lastX][this.lastY] = 0;
+        if (flag == 0) this.board[this.lastX][this.lastY] = 0;
         else this.board[X][Y] = 0;
     }
 
@@ -904,12 +919,12 @@ class GameState {
         console.log(this.board);
         var xCenter, yCenter;
         for (var X = 0; X < rows; X++) {
-            for (var Y = 0; Y < columns; Y++) {            
+            for (var Y = 0; Y < columns; Y++) {
                 let XY = this.XYCenters(X, Y);
                 xCenter = XY.x;
                 yCenter = XY.y;
-                if (this.board[X][Y] == 0)this.clearBlock(xCenter, yCenter, 1, X, Y);
-                else if (~this.board[X][Y])this.drawBlock(xCenter, yCenter, X, Y, this.board[X][Y]);
+                if (this.board[X][Y] == 0) this.clearBlock(xCenter, yCenter, 1, X, Y);
+                else if (~this.board[X][Y]) this.drawBlock(xCenter, yCenter, X, Y, this.board[X][Y]);
             }
         }
     }
@@ -929,6 +944,7 @@ function start() {
 
         if (numberOfTurns % 2 != 0) {    // player 2's turn
             type = currentState.getMoveType(playerTwoCode);
+            console.log(numberOfTurns, type);
 
             if (agent2 === 0) {  // human
                 if (clickedX && clickedY) {
@@ -937,8 +953,8 @@ function start() {
                 }
             }
             else if (agent2 === 1) { // minimax
-                currentState.makeMove(type, getBestMove(type)); 
-                moved = true; 
+                currentState.makeMove(type, getBestMove(type));
+                moved = true;
             }
             else {  // alphaBeta
                 currentState.makeMove(type, getBestMove_ABP(type));
@@ -947,16 +963,17 @@ function start() {
         }
         else {  //player 1's turn
             type = currentState.getMoveType(playerOneCode);
+            console.log(numberOfTurns, type);
+
             if (agent1 === 0) {
                 if (clickedX && clickedY) {
-                    console.log(clickedX, clickedY);
                     currentState.makeMove(type, { X: clickedX, Y: clickedY });
                     moved = true;
                 }
             }
             else if (agent1 === 1) {
-                currentState.makeMove(type, getBestMove(type)); 
-                moved = true; 
+                currentState.makeMove(type, getBestMove(type));
+                moved = true;
             }
             else {
                 currentState.makeMove(type, getBestMove_ABP(type));
@@ -1106,9 +1123,9 @@ function getBestMove(type) {
     let bestMove;
 
     const possibleMoves = currentState.getPossibleMoves(type);
-    
+
     for (let move of possibleMoves) {
-        let nextState =  _.cloneDeep(currentState);
+        let nextState = _.cloneDeep(currentState);
         nextState.makeMove(type, move);
         const ret = minimax(type, nextState, depth - 1, false);
         if (ret > mx) {
@@ -1121,7 +1138,7 @@ function getBestMove(type) {
 }
 
 function minimax(type, state, depth, agent) {
-    console.log("from minimax")
+    console.log("from minimax");
     return 0;
     if (depth === 0 || state.checkGameOver()) {
         return state.evaluate();
@@ -1133,7 +1150,7 @@ function minimax(type, state, depth, agent) {
         let mx = -Infinity;
 
         for (let move of possibleMoves) {
-            const nextState =  _.cloneDeep(state);
+            const nextState = _.cloneDeep(state);
 
             nextState.makeMove(type, move);
             const ret = minimax(type, nextState, depth - 1, false);
@@ -1146,7 +1163,7 @@ function minimax(type, state, depth, agent) {
         let mn = Infinity;
 
         for (let move of possibleMoves) {
-            const nextState =  _.cloneDeep(state);
+            const nextState = _.cloneDeep(state);
 
             nextState.makeMove(type, move);
             const ret = minimax(type, nextState, depth - 1, true);

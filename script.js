@@ -23,7 +23,7 @@ var turn = 0;
 var agent1 = 1;
 var agent2 = 1;
 
-const depth = 5;
+const depth = 3;
 var currentState;
 
 
@@ -396,7 +396,7 @@ class GameState {
                             this.clearBlock(this.lastCenterX, this.lastCenterY);
                             this.drawBlock(xCenter, yCenter, X, Y);
                             turn = 1 - turn;
-                        }                        
+                        }
                     } else {
                         this.turnOffActive(this.lastCenterX, this.lastCenterY);
                     }
@@ -965,8 +965,8 @@ function start() {
         } else if (agent === 1) { // minimax
             let move = getBestMove(type);
             let bMove = move.b;
-            let fMove = move.f;
-            console.log("xxx", agent, bMove === fMove);
+            // let fMove = move.f;
+            // console.log("xxx", agent, bMove === fMove);
             await makeMoveWithDelay(type, bMove);
             moved = true;
         } else { // alphaBeta
@@ -989,7 +989,7 @@ function start() {
 
     async function playGame() {
         while (currentState.checkGameOver() === false) {
-            if (turn == 1) {
+            if (turn === 1) {
                 // player 2's turn
                 await playTurn(playerTwoCode, agent2);
             } else {
@@ -1138,11 +1138,12 @@ function getBestMove(type) {
     let bestMove;
 
     const possibleMoves = currentState.getPossibleMoves(type);
-    // return possibleMoves[0];
-
+    return { b: possibleMoves[0] };
+    
     for (let move of possibleMoves) {
         let nextState = _.cloneDeep(currentState);
         nextState.makeMove(type, move);
+
         const ret = minimax(type, nextState, depth - 1, false);
         if (ret > mx) {
             mx = ret;
@@ -1154,7 +1155,6 @@ function getBestMove(type) {
 }
 
 function minimax(type, state, depth, agent) {
-    console.log("from minimax");
     return 0;
     if (depth === 0 || state.checkGameOver()) {
         return state.evaluate();
@@ -1167,8 +1167,8 @@ function minimax(type, state, depth, agent) {
 
         for (let move of possibleMoves) {
             const nextState = _.cloneDeep(state);
-
             nextState.makeMove(type, move);
+
             const ret = minimax(type, nextState, depth - 1, false);
             mx = Math.max(mx, ret);
         }
@@ -1180,8 +1180,8 @@ function minimax(type, state, depth, agent) {
 
         for (let move of possibleMoves) {
             const nextState = _.cloneDeep(state);
-
             nextState.makeMove(type, move);
+
             const ret = minimax(type, nextState, depth - 1, true);
             mn = Math.min(mn, ret);
         }
@@ -1198,8 +1198,7 @@ function getBestMove_ABP(type) {
     const possibleMoves = currentState.getPossibleMoves(type);
 
     for (let move of possibleMoves) {
-        let nextState = new GameState(currentState.board);
-
+        const nextState = _.cloneDeep(state);
         nextState.makeMove(type, move);
 
         const ret = alpha_beta_pruning(type, nextState, depth - 1, -Infinity, Infinity, false);
@@ -1223,8 +1222,7 @@ function alpha_beta_pruning(type, state, depth, alpha, beta, maximizingPlayer) {
         let mx = -Infinity;
 
         for (let move of possibleMoves) {
-            const nextState = new GameState(state.board);
-
+            const nextState = _.cloneDeep(state);
             nextState.makeMove(type, move);
 
             const ret = alpha_beta_pruning(type, nextState, depth - 1, alpha, beta, false);
@@ -1242,8 +1240,7 @@ function alpha_beta_pruning(type, state, depth, alpha, beta, maximizingPlayer) {
         let mn = Infinity;
 
         for (let move of possibleMoves) {
-            const nextState = new GameState(state.board);
-
+            const nextState = _.cloneDeep(state);
             nextState.makeMove(type, move);
 
             const ret = alpha_beta_pruning(type, nextState, depth - 1, alpha, beta, true);

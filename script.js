@@ -15,6 +15,7 @@ var clickSound;
 var positionMatrix = new Array(7);
 var canvas = document.getElementById("myCanvas");
 var context = canvas.getContext("2d");
+var turn = 0;
 
 // 0 = Human
 // 1 = minimax
@@ -241,11 +242,11 @@ class GameState {
         var yCenter;
         var xCenter;
 
-        console.log(numberOfTurns, type, move);
+        console.log(turn, type, move);
 
         var X, Y;
         if ((type == 2 || type == 3) &&
-            ((numberOfTurns % 2 && agent2 !== 0 && this.isActiveRed === false) || (numberOfTurns % 2 === 0 && agent1 !== 0 && this.isActiveGreen === false))) {
+            ((turn === 1 && agent2 !== 0 && this.isActiveRed === false) || (turn === 0 && agent1 !== 0 && this.isActiveGreen === false))) {
             X = move.from.X;
             Y = move.from.Y;
         }
@@ -263,7 +264,7 @@ class GameState {
             let { X, Y } = move;
 
             ////clickSound.play();
-            if (numberOfTurns % 2 != 0) {
+            if (turn === 1) {
                 //Player two made a move, hence made a block red.
                 this.redBlocks++;
                 this.board[X][Y] = 2;
@@ -280,6 +281,7 @@ class GameState {
                     document.getElementById("turn").innerHTML = "P2";
                     document.getElementById("message").innerHTML = "A Mill is formed. Click on green block to remove it.";
                 } else {
+                    turn = 0;
                     document.getElementById("message").innerHTML = "Click on empty spot to place your piece";
                 }
             }
@@ -300,6 +302,7 @@ class GameState {
                     document.getElementById("turn").innerHTML = "P1";
                     document.getElementById("message").innerHTML = "A Mill is formed. Click on red block to remove it.";
                 } else {
+                    turn = 1;
                     document.getElementById("message").innerHTML = "Click on empty spot to place your piece";
                 }
             }
@@ -312,7 +315,7 @@ class GameState {
             let X, Y;
             let agent = false;
 
-            if (numberOfTurns % 2) {
+            if (turn === 1) {
                 if (agent2 !== 0) {
                     if (this.isActiveRed === false) {
                         X = move.from.X;
@@ -329,7 +332,7 @@ class GameState {
                     Y = move.Y;
                 }
             }
-            else if (numberOfTurns % 2 == 0) {
+            else if (turn === 0) {
                 if (agent1 !== 0) {
                     if (this.isActiveGreen === false) {
                         X = move.from.X;
@@ -361,6 +364,7 @@ class GameState {
                                 this.board[this.lastX][this.lastY] = 0;
                                 this.clearBlock(this.lastCenterX, this.lastCenterY);
                                 this.drawBlock(xCenter, yCenter, X, Y);
+                                turn = 1 - turn;
                             }
                         } else if (X == 1 || X == 5 || Y == 1 || Y == 5) {
                             if (((Math.abs(X - this.lastX) + Math.abs(Y - this.lastY)) == 2) || ((Math.abs(X - this.lastX) + Math.abs(Y - this.lastY)) == 1)) {
@@ -368,6 +372,7 @@ class GameState {
                                 this.board[this.lastX][this.lastY] = 0;
                                 this.clearBlock(this.lastCenterX, this.lastCenterY);
                                 this.drawBlock(xCenter, yCenter, X, Y);
+                                turn = 1 - turn;
                             }
                         } else if (X == 2 || X == 4 || Y == 2 || Y == 4) {
                             if (((Math.abs(X - this.lastX) + Math.abs(Y - this.lastY)) == 1)) {
@@ -375,6 +380,7 @@ class GameState {
                                 this.board[this.lastX][this.lastY] = 0;
                                 this.clearBlock(this.lastCenterX, this.lastCenterY);
                                 this.drawBlock(xCenter, yCenter, X, Y);
+                                turn = 1 - turn;
                             }
                         }
 
@@ -383,23 +389,23 @@ class GameState {
                             this.board[this.lastX][this.lastY] = 0;
                             this.clearBlock(this.lastCenterX, this.lastCenterY);
                             this.drawBlock(xCenter, yCenter, X, Y);
+                            turn = 1 - turn;
                         }
                         else if (this.isRedThreeLeft && (this.board[this.lastX][this.lastY] == playerTwoCode)) {
                             this.board[this.lastX][this.lastY] = 0;
                             this.clearBlock(this.lastCenterX, this.lastCenterY);
                             this.drawBlock(xCenter, yCenter, X, Y);
-                        }
-                        else {
-                            this.turnOffActive(this.lastCenterX, this.lastCenterY);
-                        }
-
+                            turn = 1 - turn;
+                        }                        
+                    } else {
+                        this.turnOffActive(this.lastCenterX, this.lastCenterY);
                     }
                 }
             }
             else if (this.board[X][Y] !== 0) {
                 //Do nothing when clicked on empty element and check the all possible moves that
                 // a player have after clicking on a  particular position of his own color.
-                if (numberOfTurns % 2 != 0 && this.board[X][Y] == 2) {
+                if (turn === 1 && this.board[X][Y] == 2) {
                     //Player two made a move, hence made a block fade red.
                     ////clickSound.play();
                     this.isActiveRed = true;
@@ -418,7 +424,7 @@ class GameState {
                     context.strokeStyle = '#003300';
                     context.stroke();
                 }
-                else if (numberOfTurns % 2 == 0 && this.board[X][Y] == 1) {
+                else if (turn === 0 && this.board[X][Y] == 1) {
                     //Player one just made a move, hence made a block green
                     //clickSound.play();
                     this.isActiveGreen = true;
@@ -465,19 +471,18 @@ class GameState {
                     this.board[X][Y] = 0;
                     this.turnOffMill();
                     this.update();
+                    turn = 1 - turn;
                 }
                 else {
                     document.getElementById("message").innerHTML = "Can't remove a block which is already a part of mill";
                 }
             }
         }
-
-        this.checkGameOver();
     }
 
     getPossibleMoves(type) {
-        const playerCode = numberOfTurns % 2 ? playerTwoCode : playerOneCode;
-        const oppositeCode = numberOfTurns % 2 ? playerOneCode : playerTwoCode;
+        const playerCode = turn === 1 ? playerTwoCode : playerOneCode;
+        const oppositeCode = turn === 1 ? playerOneCode : playerTwoCode;
 
         const empty = [];
         const possibleMoves = [];
@@ -747,11 +752,13 @@ class GameState {
                         "Hence, Player " + playerTwoCode + " wins !");
                     // location.reload(true);
                     return true;
+
                 } else if (!this.canMove(playerTwoCode, this.redBlocks)) {
                     console.log("No possible moves left for Player " + playerTwoCode + "\n" +
                         "Hence, Player " + playerOneCode + " wins !");
                     // location.reload(true);
                     return true;
+
                 }
             }
         }
@@ -891,7 +898,7 @@ class GameState {
 
     update() {
         //Update player turn
-        if (numberOfTurns % 2 != 0) {
+        if (turn === 1) {
             document.getElementById("turn").innerHTML = "P2";
         } else {
             document.getElementById("turn").innerHTML = "P1";
@@ -942,52 +949,57 @@ function initializeGame() {
 }
 
 function start() {
-    while (currentState.checkGameOver() === false) {
+    function makeMoveWithDelay(type, move) {
+        currentState.makeMove(type, move);
+        return new Promise(resolve => setTimeout(resolve, 6000));
+    }
+
+    async function playerMove(type, agent) {
         let moved = false;
 
-        if (numberOfTurns % 2 != 0) {    // player 2's turn
-            type = currentState.getMoveType(playerTwoCode);
-            console.log(numberOfTurns, type);
-
-            if (agent2 === 0) {  // human
-                if (clickedX && clickedY) {
-                    currentState.makeMove(type, { X: clickedX, Y: clickedY });
-                    moved = true;
-                }
-            }
-            else if (agent2 === 1) { // minimax
-                currentState.makeMove(type, getBestMove(type));
+        if (agent === 0) { // human
+            if (clickedX && clickedY) {
+                currentState.makeMove(type, { X: clickedX, Y: clickedY });
                 moved = true;
             }
-            else {  // alphaBeta
-                currentState.makeMove(type, getBestMove_ABP(type));
-                moved = true;
-            }
+        } else if (agent === 1) { // minimax
+            let move = getBestMove(type);
+            let bMove = move.b;
+            let fMove = move.f;
+            console.log("xxx", agent, bMove === fMove);
+            await makeMoveWithDelay(type, bMove);
+            moved = true;
+        } else { // alphaBeta
+            currentState.makeMove(type, getBestMove_ABP(type));
+            moved = true;
         }
-        else {  //player 1's turn
-            type = currentState.getMoveType(playerOneCode);
-            console.log(numberOfTurns, type);
 
-            if (agent1 === 0) {
-                if (clickedX && clickedY) {
-                    currentState.makeMove(type, { X: clickedX, Y: clickedY });
-                    moved = true;
-                }
-            }
-            else if (agent1 === 1) {
-                currentState.makeMove(type, getBestMove(type));
-                moved = true;
-            }
-            else {
-                currentState.makeMove(type, getBestMove_ABP(type));
-                moved = true;
-            }
-        }
+        return moved;
+    }
+
+    async function playTurn(playerCode, agent) {
+        type = currentState.getMoveType(playerCode);
+
+        const moved = await playerMove(type, agent);
 
         if (moved) {
             numberOfTurns++;
         }
     }
+
+    async function playGame() {
+        while (currentState.checkGameOver() === false) {
+            if (turn == 1) {
+                // player 2's turn
+                await playTurn(playerTwoCode, agent2);
+            } else {
+                // player 1's turn
+                await playTurn(playerOneCode, agent1);
+            }
+        }
+    }
+
+    playGame();
 }
 
 function sound(src) {
@@ -1126,6 +1138,7 @@ function getBestMove(type) {
     let bestMove;
 
     const possibleMoves = currentState.getPossibleMoves(type);
+    // return possibleMoves[0];
 
     for (let move of possibleMoves) {
         let nextState = _.cloneDeep(currentState);
@@ -1137,7 +1150,7 @@ function getBestMove(type) {
         }
     }
     currentState.drawBoard();
-    return bestMove;
+    return { b: bestMove, f: possibleMoves[0] };
 }
 
 function minimax(type, state, depth, agent) {
